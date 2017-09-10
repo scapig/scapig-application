@@ -9,13 +9,17 @@ import org.joda.time.DateTime
 case class Application(name: String,
                        description: String,
                        collaborators: Set[Collaborator],
+                       applicationUrls: ApplicationUrls,
                        tokens: ApplicationTokens = ApplicationTokens(),
-                       applicationUrls: ApplicationUrls = ApplicationUrls(),
                        createdOn: DateTime = DateTime.now,
                        rateLimitTier: Option[RateLimitTier.Value] = Some(BRONZE),
                        id: UUID = UUID.randomUUID()) {
 
   lazy val admins = collaborators.filter(_.role == Role.ADMINISTRATOR)
+}
+
+object Application {
+  def apply(req: CreateApplicationRequest): Application = Application(req.name, req.description, req.normalisedCollaborators, req.applicationUrls)
 }
 
 case class Collaborator(emailAddress: String, role: Role.Value)
@@ -38,9 +42,9 @@ case class EnvironmentToken(clientId: String = random(),
 case class ClientSecret(secret: String = random(),
                         createdOn: DateTime = DateTime.now())
 
-case class ApplicationUrls(redirectUris: Seq[String] = Seq.empty,
-                           termsAndConditionsUrl: String = "",
-                           privacyPolicyUrl: String = "")
+case class ApplicationUrls(redirectUris: Seq[String],
+                           termsAndConditionsUrl: String,
+                           privacyPolicyUrl: String)
 
 object Role extends Enumeration {
   type Role = Value

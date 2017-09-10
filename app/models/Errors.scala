@@ -14,5 +14,6 @@ sealed abstract class ErrorResponse(
 }
 
 case class ErrorInvalidRequest(errorMessage: String) extends ErrorResponse(BAD_REQUEST, "INVALID_REQUEST", errorMessage)
+case class ApplicationNotFound(id: String) extends ErrorResponse(NOT_FOUND, "NOT_FOUND", s"no application found for id $id")
 
 class ValidationException(message: String) extends RuntimeException(message)

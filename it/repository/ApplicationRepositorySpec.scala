@@ -8,7 +8,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 class ApplicationRepositorySpec extends UnitSpec with BeforeAndAfterEach {
 
-  val application = Application("app name", "app description", Set(Collaborator("admin@app.com", Role.ADMINISTRATOR)))
+  val applicationUrls = ApplicationUrls(Seq("http://redirecturi"), "http://conditionUrl", "http://privacyUrl")
+  val application = Application("app name", "app description", Set(Collaborator("admin@app.com", Role.ADMINISTRATOR)), applicationUrls)
 
   lazy val fakeApplication = new GuiceApplicationBuilder()
     .configure("mongodb.uri" -> "mongodb://localhost:27017/tapi-delegated-authority-test")
