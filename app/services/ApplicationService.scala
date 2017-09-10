@@ -14,6 +14,10 @@ class ApplicationService @Inject()(applicationRepository: ApplicationRepository)
     applicationRepository.fetch(id)
   }
 
+  def fetchByClientId(clientId: String): Future[Option[Application]] = {
+    applicationRepository.fetchByClientId(clientId)
+  }
+
   def createOrUpdate(application: Application): Future[Application] = applicationRepository.save(application)
 
 }

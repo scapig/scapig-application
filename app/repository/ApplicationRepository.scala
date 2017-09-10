@@ -34,4 +34,14 @@ class ApplicationRepository @Inject()(val reactiveMongoApi: ReactiveMongoApi)  {
       collection.find(Json.obj("id"-> id)).one[Application]
     )
   }
+
+  def fetchByClientId(clientId: String): Future[Option[Application]] = {
+    repository.flatMap(collection =>
+      collection.find(Json.obj("$or"-> Json.arr(
+        Json.obj("tokens.production.clientId" -> clientId),
+        Json.obj("tokens.sandbox.clientId" -> clientId)
+      ))).one[Application]
+    )
+  }
+
 }

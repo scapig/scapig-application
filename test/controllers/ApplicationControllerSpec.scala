@@ -36,6 +36,8 @@ class ApplicationControllerSpec extends UnitSpec with MockitoSugar with BeforeAn
 
     val application = Application(createAppRequest.name, createAppRequest.description,
       createAppRequest.collaborators, createAppRequest.applicationUrls)
+    val productionClientId = application.tokens.production.clientId
+
   }
 
   override def beforeAll {
@@ -93,4 +95,28 @@ class ApplicationControllerSpec extends UnitSpec with MockitoSugar with BeforeAn
       jsonBodyOf(result) shouldBe Json.parse(s"""{"code": "NOT_FOUND", "message": "no application found for id ${application.id}"}""")
     }
   }
+
+  "fetchByClientId" should {
+
+    "succeed with a 200 (Ok) with the application when the application exists" in new Setup {
+
+      given(mockApplicationService.fetchByClientId(productionClientId))
+        .willReturn(successful(Some(application)))
+
+      val result: Result = await(underTest.fetchByClientId(productionClientId)(request))
+
+      status(result) shouldBe Status.OK
+      jsonBodyOf(result) shouldBe Json.toJson(application)
+    }
+
+    "fail with a 404 (Not Found) when the api-definition does not exist" in new Setup {
+      given(mockApplicationService.fetchByClientId("anotherClientId")).willReturn(successful(None))
+
+      val result: Result = await(underTest.fetchByClientId("anotherClientId")(request))
+
+      status(result) shouldBe Status.NOT_FOUND
+      jsonBodyOf(result) shouldBe Json.parse(s"""{"code": "NOT_FOUND", "message": "no application found for clientId anotherClientId"}""")
+    }
+  }
+
 }

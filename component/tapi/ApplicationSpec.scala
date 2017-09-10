@@ -32,5 +32,36 @@ class ApplicationSpec extends BaseFeatureSpec {
       fetchResponse.code shouldBe OK
       Json.parse(fetchResponse.body) shouldBe Json.toJson(newApplication)
     }
+
+    scenario("fetch by production clientId") {
+      Given("An application")
+      val application = createApplication()
+
+      When("I fetch the application by production clientId")
+      val fetchResponse = Http(s"$serviceUrl/application?clientId=${application.tokens.production.clientId}").asString
+
+      Then("I receive a 200 (Ok) with the application")
+      fetchResponse.code shouldBe OK
+      Json.parse(fetchResponse.body) shouldBe Json.toJson(application)
+    }
+
+    scenario("fetch by sandbox clientId") {
+      Given("An application")
+      val application = createApplication()
+
+      When("I fetch the application by sandbox clientId")
+      val fetchResponse = Http(s"$serviceUrl/application?clientId=${application.tokens.sandbox.clientId}").asString
+
+      Then("I receive a 200 (Ok) with the application")
+      fetchResponse.code shouldBe OK
+      Json.parse(fetchResponse.body) shouldBe Json.toJson(application)
+    }
+  }
+
+  private def createApplication(): Application = {
+    val createdResponse = Http(s"$serviceUrl/application")
+      .headers(Seq(CONTENT_TYPE -> "application/json"))
+      .postData(Json.toJson(createAppRequest).toString()).asString
+    Json.parse(createdResponse.body).as[Application]
   }
 }

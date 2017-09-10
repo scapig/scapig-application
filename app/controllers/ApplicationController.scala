@@ -22,8 +22,14 @@ class ApplicationController  @Inject()(cc: ControllerComponents,
   def fetch(id: String) = Action.async { implicit request =>
     applicationService.fetch(id) map {
       case Some(application) => Ok(Json.toJson(application))
-      case None => ApplicationNotFound(id).toHttpResponse
+      case None => ApplicationNotFound("id", id).toHttpResponse
     }
   }
 
+  def fetchByClientId(clientId: String) = Action.async { implicit request =>
+    applicationService.fetchByClientId(clientId) map {
+      case Some(application) => Ok(Json.toJson(application))
+      case None => ApplicationNotFound("clientId", clientId).toHttpResponse
+    }
+  }
 }

@@ -14,6 +14,7 @@ class ApplicationServiceSpec extends UnitSpec with MockitoSugar {
 
   val applicationUrls = ApplicationUrls(Seq("http://redirecturi"), "http://conditionUrl", "http://privacyUrl")
   val application = Application("app name", "app description", Set(Collaborator("admin@app.com", Role.ADMINISTRATOR)), applicationUrls)
+  val productionClientId = application.tokens.production.clientId
 
   trait Setup {
     val mockApplicationRepository = mock[ApplicationRepository]
@@ -50,7 +51,7 @@ class ApplicationServiceSpec extends UnitSpec with MockitoSugar {
       result shouldBe Some(application)
     }
 
-    "return None when the API does not exist" in new Setup {
+    "return None when the application does not exist" in new Setup {
       given(mockApplicationRepository.fetch(application.id.toString)).willReturn(successful(None))
 
       val result = await(underTest.fetch(application.id.toString))
@@ -66,4 +67,31 @@ class ApplicationServiceSpec extends UnitSpec with MockitoSugar {
       }
     }
   }
+
+  "fetchByClientId" should {
+    "return the application when it exists" in new Setup {
+      given(mockApplicationRepository.fetchByClientId(productionClientId)).willReturn(successful(Some(application)))
+
+      val result = await(underTest.fetchByClientId(productionClientId))
+
+      result shouldBe Some(application)
+    }
+
+    "return None when the application does not exist" in new Setup {
+      given(mockApplicationRepository.fetchByClientId(productionClientId)).willReturn(successful(None))
+
+      val result = await(underTest.fetchByClientId(productionClientId))
+
+      result shouldBe None
+    }
+
+    "fail when the repository fails" in new Setup {
+      given(mockApplicationRepository.fetchByClientId(productionClientId)).willReturn(failed(new RuntimeException("Error message")))
+
+      intercept[RuntimeException] {
+        await(underTest.fetchByClientId(productionClientId))
+      }
+    }
+  }
+
 }
