@@ -32,4 +32,14 @@ class ApplicationController  @Inject()(cc: ControllerComponents,
       case None => ApplicationNotFound("clientId", clientId).toHttpResponse
     }
   }
+
+  def authenticate() = Action.async(parse.json) { implicit request =>
+    withJsonBody[AuthenticateRequest] { authenticateRequest: AuthenticateRequest =>
+      applicationService.authenticate(authenticateRequest) map {
+        case Some(environmentApplication) => Ok(Json.toJson(environmentApplication))
+        case None => Unauthorized
+      }
+    }
+  }
+
 }

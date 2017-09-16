@@ -12,13 +12,19 @@ object JsonFormatters {
   implicit val formatRole = EnumJson.enumFormat(Role)
   implicit val formatEnvironment = EnumJson.enumFormat(Environment)
   implicit val formatRateLimitTier = EnumJson.enumFormat(RateLimitTier)
+  implicit val formatAuthType = EnumJson.enumFormat(AuthType)
+
   implicit val formatClientSecret = Json.format[ClientSecret]
-  implicit val formatEnvironmentToken = Json.format[EnvironmentToken]
-  implicit val formatApplicationTokens = Json.format[ApplicationTokens]
+  implicit val formatEnvironmentCredentials = Json.format[EnvironmentCredentials]
+  implicit val formatApplicationCredentials = Json.format[ApplicationCredentials]
   implicit val formatCollaborator = Json.format[Collaborator]
   implicit val formatApplicationUrls = Json.format[ApplicationUrls]
   implicit val formatCreateApplicationRequest = Json.format[CreateApplicationRequest]
   implicit val formatApplication = Json.format[Application]
+
+  implicit val formatEnvironmentApplication = Json.format[EnvironmentApplication]
+  implicit val formatAuthenticateRequest = Json.format[AuthenticateRequest]
+
   implicit val errorResponseWrites = new Writes[ErrorResponse] {
     def writes(e: ErrorResponse): JsValue = Json.obj("code" -> e.errorCode, "message" -> e.message)
   }

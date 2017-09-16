@@ -36,8 +36,8 @@ class ApplicationControllerSpec extends UnitSpec with MockitoSugar with BeforeAn
 
     val application = Application(createAppRequest.name, createAppRequest.description,
       createAppRequest.collaborators, createAppRequest.applicationUrls)
-    val productionClientId = application.tokens.production.clientId
-
+    val productionClientId = application.credentials.production.clientId
+    val environmentApplication = EnvironmentApplication(productionClientId, application)
   }
 
   override def beforeAll {
@@ -56,7 +56,7 @@ class ApplicationControllerSpec extends UnitSpec with MockitoSugar with BeforeAn
 
       status(result) shouldBe Status.OK
       val createdApplication = jsonBodyOf(result).as[Application]
-      createdApplication shouldBe application.copy(tokens = createdApplication.tokens, id = createdApplication.id)
+      createdApplication shouldBe application.copy(credentials = createdApplication.credentials, id = createdApplication.id)
 
       verify(mockApplicationService).createOrUpdate(createdApplication)
     }
@@ -86,7 +86,7 @@ class ApplicationControllerSpec extends UnitSpec with MockitoSugar with BeforeAn
       jsonBodyOf(result) shouldBe Json.toJson(application)
     }
 
-    "fail with a 404 (Not Found) when the api-definition does not exist" in new Setup {
+    "fail with a 404 (Not Found) when the application does not exist" in new Setup {
       given(mockApplicationService.fetch(application.id.toString)).willReturn(successful(None))
 
       val result: Result = await(underTest.fetch(application.id.toString)(request))
@@ -98,18 +98,18 @@ class ApplicationControllerSpec extends UnitSpec with MockitoSugar with BeforeAn
 
   "fetchByClientId" should {
 
-    "succeed with a 200 (Ok) with the application when the application exists" in new Setup {
+    "succeed with a 200 (Ok) with the environment application when the application exists" in new Setup {
 
       given(mockApplicationService.fetchByClientId(productionClientId))
-        .willReturn(successful(Some(application)))
+        .willReturn(successful(Some(environmentApplication)))
 
       val result: Result = await(underTest.fetchByClientId(productionClientId)(request))
 
       status(result) shouldBe Status.OK
-      jsonBodyOf(result) shouldBe Json.toJson(application)
+      jsonBodyOf(result) shouldBe Json.toJson(environmentApplication)
     }
 
-    "fail with a 404 (Not Found) when the api-definition does not exist" in new Setup {
+    "fail with a 404 (Not Found) when the application does not exist" in new Setup {
       given(mockApplicationService.fetchByClientId("anotherClientId")).willReturn(successful(None))
 
       val result: Result = await(underTest.fetchByClientId("anotherClientId")(request))
@@ -119,4 +119,27 @@ class ApplicationControllerSpec extends UnitSpec with MockitoSugar with BeforeAn
     }
   }
 
+  "authenticate" should {
+    val authenticateRequest = AuthenticateRequest("clientId", "clientSecret")
+
+    "succeed with a 200 (Ok) with the environment application when the credentials are valid" in new Setup {
+
+      given(mockApplicationService.authenticate(authenticateRequest))
+        .willReturn(successful(Some(environmentApplication)))
+
+      val result: Result = await(underTest.authenticate()(request.withBody(Json.toJson(authenticateRequest))))
+
+      status(result) shouldBe Status.OK
+      jsonBodyOf(result) shouldBe Json.toJson(environmentApplication)
+    }
+
+    "fail with a 401 (Unauthorized) when the credentials are invalid" in new Setup {
+      given(mockApplicationService.authenticate(authenticateRequest))
+        .willReturn(successful(None))
+
+      val result: Result = await(underTest.authenticate()(request.withBody(Json.toJson(authenticateRequest))))
+
+      status(result) shouldBe Status.UNAUTHORIZED
+    }
+  }
 }

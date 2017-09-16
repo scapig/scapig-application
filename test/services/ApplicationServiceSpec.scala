@@ -14,7 +14,8 @@ class ApplicationServiceSpec extends UnitSpec with MockitoSugar {
 
   val applicationUrls = ApplicationUrls(Seq("http://redirecturi"), "http://conditionUrl", "http://privacyUrl")
   val application = Application("app name", "app description", Set(Collaborator("admin@app.com", Role.ADMINISTRATOR)), applicationUrls)
-  val productionClientId = application.tokens.production.clientId
+  val productionClientId = application.credentials.production.clientId
+  val sandboxClientId = application.credentials.sandbox.clientId
 
   trait Setup {
     val mockApplicationRepository = mock[ApplicationRepository]
@@ -69,12 +70,14 @@ class ApplicationServiceSpec extends UnitSpec with MockitoSugar {
   }
 
   "fetchByClientId" should {
-    "return the application when it exists" in new Setup {
+    "return the environement application when it exists" in new Setup {
+      val environmentApplication = EnvironmentApplication(application.id, application.name, AuthType.PRODUCTION, application.description, application.applicationUrls)
+
       given(mockApplicationRepository.fetchByClientId(productionClientId)).willReturn(successful(Some(application)))
 
       val result = await(underTest.fetchByClientId(productionClientId))
 
-      result shouldBe Some(application)
+      result shouldBe Some(environmentApplication)
     }
 
     "return None when the application does not exist" in new Setup {
@@ -94,4 +97,46 @@ class ApplicationServiceSpec extends UnitSpec with MockitoSugar {
     }
   }
 
+  "authenticate" should {
+    "return the production application when the clientId and secret are correct" in new Setup {
+      val productionApplication = EnvironmentApplication(application.id, application.name, AuthType.PRODUCTION, application.description, application.applicationUrls)
+
+      given(mockApplicationRepository.fetchByClientId(productionClientId)).willReturn(successful(Some(application)))
+
+      val result = await(underTest.authenticate(
+        AuthenticateRequest(application.credentials.production.clientId,  application.credentials.production.clientSecrets.head.secret)))
+
+      result shouldBe Some(productionApplication)
+    }
+
+    "return the sandbox application when the clientId and secret are correct" in new Setup {
+      val sandboxApplication = EnvironmentApplication(application.id, application.name, AuthType.SANDBOX, application.description, application.applicationUrls)
+
+      given(mockApplicationRepository.fetchByClientId(sandboxClientId)).willReturn(successful(Some(application)))
+
+      val result = await(underTest.authenticate(
+        AuthenticateRequest(application.credentials.sandbox.clientId,  application.credentials.sandbox.clientSecrets.head.secret)))
+
+      result shouldBe Some(sandboxApplication)
+    }
+
+    "return None when the secret is correct" in new Setup {
+      given(mockApplicationRepository.fetchByClientId(productionClientId)).willReturn(successful(Some(application)))
+
+      val result = await(underTest.authenticate(
+        AuthenticateRequest(application.credentials.production.clientId,  "invalidSecret")))
+
+      result shouldBe None
+    }
+
+    "return None when the clientId is correct" in new Setup {
+      given(mockApplicationRepository.fetchByClientId("invalidClientId")).willReturn(successful(None))
+
+      val result = await(underTest.authenticate(
+        AuthenticateRequest("invalidClientId",  application.credentials.production.clientSecrets.head.secret)))
+
+      result shouldBe None
+    }
+
+  }
 }

@@ -10,7 +10,7 @@ case class Application(name: String,
                        description: String,
                        collaborators: Set[Collaborator],
                        applicationUrls: ApplicationUrls,
-                       tokens: ApplicationTokens = ApplicationTokens(),
+                       credentials: ApplicationCredentials = ApplicationCredentials(),
                        createdOn: DateTime = DateTime.now,
                        rateLimitTier: Option[RateLimitTier.Value] = Some(BRONZE),
                        id: UUID = UUID.randomUUID()) {
@@ -24,8 +24,8 @@ object Application {
 
 case class Collaborator(emailAddress: String, role: Role.Value)
 
-case class ApplicationTokens(production: EnvironmentToken = EnvironmentToken(),
-                             sandbox: EnvironmentToken = EnvironmentToken()) {
+case class ApplicationCredentials(production: EnvironmentCredentials = EnvironmentCredentials(),
+                                  sandbox: EnvironmentCredentials = EnvironmentCredentials()) {
 
   def environmentToken(environment: Environment.Value) = {
     environment match {
@@ -35,9 +35,9 @@ case class ApplicationTokens(production: EnvironmentToken = EnvironmentToken(),
   }
 }
 
-case class EnvironmentToken(clientId: String = random(),
-                            serverToken: String = random(),
-                            clientSecrets: Seq[ClientSecret] = Seq(ClientSecret()))
+case class EnvironmentCredentials(clientId: String = random(),
+                                  serverToken: String = random(),
+                                  clientSecrets: Seq[ClientSecret] = Seq(ClientSecret()))
 
 case class ClientSecret(secret: String = random(),
                         createdOn: DateTime = DateTime.now())

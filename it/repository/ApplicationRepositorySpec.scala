@@ -43,13 +43,13 @@ class ApplicationRepositorySpec extends UnitSpec with BeforeAndAfterEach {
     "return the application if the sandbox clientId matches" in {
       await(underTest.save(application))
 
-      await(underTest.fetchByClientId(application.tokens.sandbox.clientId)) shouldBe Some(application)
+      await(underTest.fetchByClientId(application.credentials.sandbox.clientId)) shouldBe Some(application)
     }
 
     "return the application if the production clientId matches" in {
       await(underTest.save(application))
 
-      await(underTest.fetchByClientId(application.tokens.production.clientId)) shouldBe Some(application)
+      await(underTest.fetchByClientId(application.credentials.production.clientId)) shouldBe Some(application)
     }
 
     "return none if no clientId matches" in {
