@@ -12,7 +12,6 @@ object JsonFormatters {
   implicit val formatRole = EnumJson.enumFormat(Role)
   implicit val formatEnvironment = EnumJson.enumFormat(Environment)
   implicit val formatRateLimitTier = EnumJson.enumFormat(RateLimitTier)
-  implicit val formatAuthType = EnumJson.enumFormat(AuthType)
 
   implicit val formatClientSecret = Json.format[ClientSecret]
   implicit val formatEnvironmentCredentials = Json.format[EnvironmentCredentials]

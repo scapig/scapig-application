@@ -2,7 +2,7 @@ package services
 
 import javax.inject.{Inject, Singleton}
 
-import models.{Application, AuthType, AuthenticateRequest, EnvironmentApplication}
+import models.{Application, Environment, AuthenticateRequest, EnvironmentApplication}
 import repository.ApplicationRepository
 
 import scala.concurrent.Future
