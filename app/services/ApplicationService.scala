@@ -19,6 +19,13 @@ class ApplicationService @Inject()(applicationRepository: ApplicationRepository)
     applicationRepository.fetchByClientId(clientId) map (_ map (app => EnvironmentApplication(clientId, app)))
   }
 
+  def fetchByServerToken(serverToken: String): Future[EnvironmentApplication] = {
+    applicationRepository.fetchByServerToken(serverToken) map { app =>
+      val clientId = if (app.credentials.production.serverToken == serverToken) app.credentials.production.clientId else app.credentials.sandbox.clientId
+      EnvironmentApplication(clientId, app)
+    }
+  }
+
   def createOrUpdate(application: Application): Future[Application] = applicationRepository.save(application)
 
   def authenticate(authenticateRequest: AuthenticateRequest): Future[Option[EnvironmentApplication]] = {

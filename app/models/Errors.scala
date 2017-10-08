@@ -20,3 +20,5 @@ case class ApplicationNotFound(key: String, id: String) extends ErrorResponse(NO
 case class ErrorNotFound() extends ErrorResponse(NOT_FOUND, "NOT_FOUND", "The resource could not be found.")
 
 class ValidationException(message: String) extends RuntimeException(message)
+
+case class ApplicationNotFoundException() extends RuntimeException()

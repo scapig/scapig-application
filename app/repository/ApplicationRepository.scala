@@ -2,7 +2,7 @@ package repository
 
 import javax.inject.{Inject, Singleton}
 
-import models.Application
+import models.{Application, ApplicationNotFoundException}
 import models.JsonFormatters._
 import play.api.libs.json.Json
 import play.modules.reactivemongo.ReactiveMongoApi
@@ -44,4 +44,15 @@ class ApplicationRepository @Inject()(val reactiveMongoApi: ReactiveMongoApi)  {
     )
   }
 
+  def fetchByServerToken(serverToken: String): Future[Application] = {
+    repository.flatMap(collection =>
+      collection.find(Json.obj("$or"-> Json.arr(
+        Json.obj("credentials.production.serverToken" -> serverToken),
+        Json.obj("credentials.sandbox.serverToken" -> serverToken)
+      ))).one[Application] map {
+        case Some(app) => app
+        case None => throw ApplicationNotFoundException()
+      }
+    )
+  }
 }

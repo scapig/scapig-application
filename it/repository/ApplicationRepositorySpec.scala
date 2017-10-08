@@ -59,4 +59,26 @@ class ApplicationRepositorySpec extends UnitSpec with BeforeAndAfterEach {
     }
 
   }
+
+  "fetchByServerToken" should {
+    "return the application if the sandbox serverToken matches" in {
+      await(underTest.save(application))
+
+      await(underTest.fetchByServerToken(application.credentials.sandbox.serverToken)) shouldBe Some(application)
+    }
+
+    "return the application if the production serverToken matches" in {
+      await(underTest.save(application))
+
+      await(underTest.fetchByServerToken(application.credentials.production.serverToken)) shouldBe Some(application)
+    }
+
+    "return none if no serverToken matches" in {
+      await(underTest.save(application))
+
+      await(underTest.fetchByServerToken("anotherServerToken")) shouldBe None
+    }
+
+  }
+
 }

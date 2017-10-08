@@ -18,7 +18,8 @@ import play.api.test.{FakeRequest, Helpers}
 import services.ApplicationService
 import utils.UnitSpec
 
-import scala.concurrent.Future.successful
+import scala.concurrent.Future
+import scala.concurrent.Future.{failed, successful}
 
 class ApplicationControllerSpec extends UnitSpec with MockitoSugar with BeforeAndAfterAll {
 
@@ -38,6 +39,7 @@ class ApplicationControllerSpec extends UnitSpec with MockitoSugar with BeforeAn
       createAppRequest.collaborators, createAppRequest.applicationUrls)
     val productionClientId = application.credentials.production.clientId
     val environmentApplication = EnvironmentApplication(productionClientId, application)
+    val productionServerToken = application.credentials.production.serverToken
   }
 
   override def beforeAll {
@@ -96,27 +98,48 @@ class ApplicationControllerSpec extends UnitSpec with MockitoSugar with BeforeAn
     }
   }
 
-  "fetchByClientId" should {
+  "queryDispatcher" should {
 
-    "succeed with a 200 (Ok) with the environment application when the application exists" in new Setup {
+    "succeed with a 200 (Ok) with the environment application when the application exists for a clientId" in new Setup {
 
       given(mockApplicationService.fetchByClientId(productionClientId))
         .willReturn(successful(Some(environmentApplication)))
 
-      val result: Result = await(underTest.fetchByClientId(productionClientId)(request))
+      val result: Result = await(underTest.queryDispatcher()(FakeRequest("GET", s"?clientId=$productionClientId")))
 
       status(result) shouldBe Status.OK
       jsonBodyOf(result) shouldBe Json.toJson(environmentApplication)
     }
 
-    "fail with a 404 (Not Found) when the application does not exist" in new Setup {
+    "fail with a 404 (Not Found) when the application does not exist for a clientId" in new Setup {
       given(mockApplicationService.fetchByClientId("anotherClientId")).willReturn(successful(None))
 
-      val result: Result = await(underTest.fetchByClientId("anotherClientId")(request))
+      val result: Result = await(underTest.queryDispatcher()(FakeRequest("GET", s"?clientId=anotherClientId")))
 
       status(result) shouldBe Status.NOT_FOUND
       jsonBodyOf(result) shouldBe Json.parse(s"""{"code": "NOT_FOUND", "message": "no application found for clientId anotherClientId"}""")
     }
+
+    "succeed with a 200 (Ok) with the environment application when the application exists for a serverToken" in new Setup {
+
+      given(mockApplicationService.fetchByServerToken(productionServerToken))
+        .willReturn(successful(environmentApplication))
+
+      val result: Result = await(underTest.queryDispatcher()(FakeRequest("GET", s"?serverToken=$productionServerToken")))
+
+      status(result) shouldBe Status.OK
+      jsonBodyOf(result) shouldBe Json.toJson(environmentApplication)
+    }
+
+    "fail with a 404 (Not Found) when the application does not exist for a serverToken" in new Setup {
+      given(mockApplicationService.fetchByServerToken("anotherServerToken")).willReturn(failed(ApplicationNotFoundException()))
+
+      val result: Result = await(underTest.queryDispatcher()(FakeRequest("GET", s"?serverToken=anotherServerToken")))
+
+      status(result) shouldBe Status.NOT_FOUND
+      jsonBodyOf(result) shouldBe Json.parse(s"""{"code": "NOT_FOUND", "message": "no application found for serverToken anotherServerToken"}""")
+    }
+
   }
 
   "authenticate" should {

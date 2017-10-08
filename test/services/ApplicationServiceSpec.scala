@@ -16,6 +16,8 @@ class ApplicationServiceSpec extends UnitSpec with MockitoSugar {
   val application = Application("app name", "app description", Set(Collaborator("admin@app.com", Role.ADMINISTRATOR)), applicationUrls)
   val productionClientId = application.credentials.production.clientId
   val sandboxClientId = application.credentials.sandbox.clientId
+  val productionServerToken = application.credentials.production.serverToken
+  val sandboxServerToken = application.credentials.sandbox.serverToken
 
   trait Setup {
     val mockApplicationRepository = mock[ApplicationRepository]
@@ -93,6 +95,32 @@ class ApplicationServiceSpec extends UnitSpec with MockitoSugar {
 
       intercept[RuntimeException] {
         await(underTest.fetchByClientId(productionClientId))
+      }
+    }
+  }
+
+  "fetchByServerToken" should {
+    "return the environment application when it exists" in new Setup {
+      val environmentApplication = EnvironmentApplication(application.id, application.name, Environment.PRODUCTION, application.description, application.applicationUrls)
+
+      given(mockApplicationRepository.fetchByServerToken(productionServerToken)).willReturn(successful(application))
+
+      val result = await(underTest.fetchByServerToken(productionServerToken))
+
+      result shouldBe environmentApplication
+    }
+
+    "propage ApplicationNotFoundException when the application does not exist" in new Setup {
+      given(mockApplicationRepository.fetchByServerToken(productionServerToken)).willReturn(failed(ApplicationNotFoundException()))
+
+      intercept[ApplicationNotFoundException]{await(underTest.fetchByServerToken(productionServerToken))}
+    }
+
+    "fail when the repository fails" in new Setup {
+      given(mockApplicationRepository.fetchByServerToken(productionServerToken)).willReturn(failed(new RuntimeException("Error message")))
+
+      intercept[RuntimeException] {
+        await(underTest.fetchByServerToken(productionServerToken))
       }
     }
   }
