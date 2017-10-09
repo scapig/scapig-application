@@ -80,7 +80,7 @@ class ApplicationControllerSpec extends UnitSpec with MockitoSugar with BeforeAn
     "succeed with a 200 (Ok) with the application when the application exists" in new Setup {
 
       given(mockApplicationService.fetch(application.id.toString))
-        .willReturn(successful(Some(application)))
+        .willReturn(successful(application))
 
       val result: Result = await(underTest.fetch(application.id.toString)(request))
 
@@ -89,7 +89,7 @@ class ApplicationControllerSpec extends UnitSpec with MockitoSugar with BeforeAn
     }
 
     "fail with a 404 (Not Found) when the application does not exist" in new Setup {
-      given(mockApplicationService.fetch(application.id.toString)).willReturn(successful(None))
+      given(mockApplicationService.fetch(application.id.toString)).willReturn(failed(ApplicationNotFoundException()))
 
       val result: Result = await(underTest.fetch(application.id.toString)(request))
 

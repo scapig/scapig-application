@@ -11,7 +11,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 @Singleton
 class ApplicationService @Inject()(applicationRepository: ApplicationRepository) {
 
-  def fetch(id: String): Future[Option[Application]] = {
+  def fetch(id: String): Future[Application] = {
     applicationRepository.fetch(id)
   }
 

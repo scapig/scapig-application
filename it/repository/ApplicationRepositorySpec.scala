@@ -12,20 +12,20 @@ class ApplicationRepositorySpec extends UnitSpec with BeforeAndAfterEach {
   val application = Application("app name", "app description", Set(Collaborator("admin@app.com", Role.ADMINISTRATOR)), applicationUrls)
 
   lazy val fakeApplication = new GuiceApplicationBuilder()
-    .configure("mongodb.uri" -> "mongodb://localhost:27017/tapi-delegated-authority-test")
+    .configure("mongodb.uri" -> "mongodb://localhost:27017/tapi-application-test")
     .build()
 
   lazy val underTest = fakeApplication.injector.instanceOf[ApplicationRepository]
 
   override def afterEach {
-    await(underTest.repository).drop(failIfNotFound = false)
+    await(await(underTest.repository).drop(failIfNotFound = false))
   }
 
   "createOrUpdate" should {
     "create a new application" in {
       await(underTest.save(application))
 
-      await(underTest.fetch(application.id.toString())) shouldBe Some(application)
+      await(underTest.fetch(application.id.toString())) shouldBe application
     }
 
     "update an existing application" in {
@@ -34,7 +34,7 @@ class ApplicationRepositorySpec extends UnitSpec with BeforeAndAfterEach {
 
       await(underTest.save(updatedApplication))
 
-      await(underTest.fetch(application.id.toString())) shouldBe Some(updatedApplication)
+      await(underTest.fetch(application.id.toString())) shouldBe updatedApplication
     }
 
   }
@@ -52,7 +52,7 @@ class ApplicationRepositorySpec extends UnitSpec with BeforeAndAfterEach {
       await(underTest.fetchByClientId(application.credentials.production.clientId)) shouldBe Some(application)
     }
 
-    "return none if no clientId matches" in {
+    "return None when no clientId matches" in {
       await(underTest.save(application))
 
       await(underTest.fetchByClientId("anotherClientId")) shouldBe None
@@ -64,19 +64,19 @@ class ApplicationRepositorySpec extends UnitSpec with BeforeAndAfterEach {
     "return the application if the sandbox serverToken matches" in {
       await(underTest.save(application))
 
-      await(underTest.fetchByServerToken(application.credentials.sandbox.serverToken)) shouldBe Some(application)
+      await(underTest.fetchByServerToken(application.credentials.sandbox.serverToken)) shouldBe application
     }
 
     "return the application if the production serverToken matches" in {
       await(underTest.save(application))
 
-      await(underTest.fetchByServerToken(application.credentials.production.serverToken)) shouldBe Some(application)
+      await(underTest.fetchByServerToken(application.credentials.production.serverToken)) shouldBe application
     }
 
-    "return none if no serverToken matches" in {
+    "fail with ApplicationNotFoundException if no serverToken matches" in {
       await(underTest.save(application))
 
-      await(underTest.fetchByServerToken("anotherServerToken")) shouldBe None
+      intercept[ApplicationNotFoundException]{await(underTest.fetchByServerToken("anotherServerToken"))}
     }
 
   }

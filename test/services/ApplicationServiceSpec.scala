@@ -47,19 +47,17 @@ class ApplicationServiceSpec extends UnitSpec with MockitoSugar {
 
   "fetch" should {
     "return the application when it exists" in new Setup {
-      given(mockApplicationRepository.fetch(application.id.toString)).willReturn(successful(Some(application)))
+      given(mockApplicationRepository.fetch(application.id.toString)).willReturn(successful(application))
 
       val result = await(underTest.fetch(application.id.toString))
 
-      result shouldBe Some(application)
+      result shouldBe application
     }
 
-    "return None when the application does not exist" in new Setup {
-      given(mockApplicationRepository.fetch(application.id.toString)).willReturn(successful(None))
+    "propagate ApplicationNotFoundException when the application does not exist" in new Setup {
+      given(mockApplicationRepository.fetch(application.id.toString)).willReturn(failed(ApplicationNotFoundException()))
 
-      val result = await(underTest.fetch(application.id.toString))
-
-      result shouldBe None
+      intercept[ApplicationNotFoundException]{await(underTest.fetch(application.id.toString))}
     }
 
     "fail when the repository fails" in new Setup {

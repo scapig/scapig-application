@@ -22,9 +22,9 @@ class ApplicationController  @Inject()(cc: ControllerComponents,
   }
 
   def fetch(id: String) = Action.async { implicit request =>
-    applicationService.fetch(id) map {
-      case Some(application) => Ok(Json.toJson(application))
-      case None => ApplicationNotFound("id", id).toHttpResponse
+    applicationService.fetch(id) map { application => Ok(Json.toJson(application))
+    } recover {
+      case _: ApplicationNotFoundException => ApplicationNotFound("id", id).toHttpResponse
     }
   }
 

@@ -22,3 +22,6 @@ case class ErrorNotFound() extends ErrorResponse(NOT_FOUND, "NOT_FOUND", "The re
 class ValidationException(message: String) extends RuntimeException(message)
 
 case class ApplicationNotFoundException() extends RuntimeException()
+
+trait HasSucceeded
+object HasSucceeded extends HasSucceeded

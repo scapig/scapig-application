@@ -6,7 +6,8 @@ import models.{Application, ApplicationNotFoundException}
 import models.JsonFormatters._
 import play.api.libs.json.Json
 import play.modules.reactivemongo.ReactiveMongoApi
-import reactivemongo.api.commands.UpdateWriteResult
+import reactivemongo.api.commands.{UpdateWriteResult, WriteResult}
+import reactivemongo.api.indexes.{Index, IndexType}
 import reactivemongo.play.json.collection.JSONCollection
 import reactivemongo.play.json._
 
@@ -29,9 +30,12 @@ class ApplicationRepository @Inject()(val reactiveMongoApi: ReactiveMongoApi)  {
     )
   }
 
-  def fetch(id: String): Future[Option[Application]] = {
+  def fetch(id: String): Future[Application] = {
     repository.flatMap(collection =>
-      collection.find(Json.obj("id"-> id)).one[Application]
+      collection.find(Json.obj("id"-> id)).one[Application] map {
+        case Some(app) => app
+        case _ => throw ApplicationNotFoundException()
+      }
     )
   }
 
@@ -55,4 +59,23 @@ class ApplicationRepository @Inject()(val reactiveMongoApi: ReactiveMongoApi)  {
       }
     )
   }
+
+  private def createIndex(field: String, indexName: String): Future[WriteResult] = {
+    repository.flatMap(collection =>
+      collection.indexesManager.create(Index(Seq((field, IndexType.Ascending)), Some(indexName)))
+    )
+  }
+
+  private def ensureIndexes() = {
+    Future.sequence(Seq(
+      createIndex("idName", "idIndex"),
+      createIndex("credentials.production.serverToken", "productionServerTokenIndex"),
+      createIndex("credentials.sandbox.serverToken", "sandboxServerTokenIndex"),
+      createIndex("credentials.production.clientId", "productionClientIdIndex"),
+      createIndex("credentials.sandbox.clientId", "sandboxClientIdIndex"),
+    ))
+  }
+
+  ensureIndexes()
+
 }
