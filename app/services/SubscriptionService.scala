@@ -28,4 +28,8 @@ class SubscriptionService @Inject()(applicationRepository: ApplicationRepository
       apis <- subscriptionRepository.getSubscriptions(applicationId)
     } yield apis
   }
+
+  def isSubscribed(applicationId: String, context: String, version: String): Future[Boolean] = {
+    subscriptionRepository.isSubscribed(applicationId, APIIdentifier(context, version))
+  }
 }

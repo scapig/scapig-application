@@ -33,4 +33,11 @@ class SubscriptionController  @Inject()(cc: ControllerComponents,
     }
   }
 
+  def validateSubscription(id: String, context: String, version: String) = Action.async { implicit request =>
+    subscriptionService.isSubscribed(id, context, version) map {
+      case true => NoContent
+      case _ => NotFound
+    }
+  }
+
 }

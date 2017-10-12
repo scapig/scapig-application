@@ -93,4 +93,23 @@ class SubscriptionServiceSpec extends UnitSpec with MockitoSugar {
     }
   }
 
+  "isSubscribed" should {
+
+    "return true when the application is subscribed to the API" in new Setup {
+      given(subscriptionRepository.isSubscribed(appId, api)).willReturn(successful(true))
+
+      val result = await(underTest.isSubscribed(appId, api.context, api.version))
+
+      result shouldBe true
+    }
+
+    "return false when the application is not subscribed to the API" in new Setup {
+      given(subscriptionRepository.isSubscribed(appId, api)).willReturn(successful(false))
+
+      val result = await(underTest.isSubscribed(appId, api.context, api.version))
+
+      result shouldBe false
+    }
+  }
+
 }

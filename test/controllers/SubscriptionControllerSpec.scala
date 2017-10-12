@@ -86,4 +86,23 @@ class SubscriptionControllerSpec extends UnitSpec with MockitoSugar with BeforeA
 
   }
 
+  "validateSubscription" should {
+    "return 204 (NoContent) when the application is subscribed to the API" in new Setup {
+      given(subscriptionService.isSubscribed(applicationId, api.context, api.version)).willReturn(Future.successful(true))
+
+      val result = await(underTest.validateSubscription(applicationId, api.context, api.version)(request))
+
+      status(result) shouldBe Status.NO_CONTENT
+    }
+
+    "return 404 (NotFound) when the application is not subscribed to the API" in new Setup {
+      given(subscriptionService.isSubscribed(applicationId, api.context, api.version)).willReturn(Future.successful(false))
+
+      val result = await(underTest.validateSubscription(applicationId, api.context, api.version)(request))
+
+      status(result) shouldBe Status.NOT_FOUND
+    }
+
+  }
+
 }
