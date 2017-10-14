@@ -71,7 +71,8 @@ class ApplicationServiceSpec extends UnitSpec with MockitoSugar {
 
   "fetchByClientId" should {
     "return the environement application when it exists" in new Setup {
-      val environmentApplication = EnvironmentApplication(application.id, application.name, Environment.PRODUCTION, application.description, application.applicationUrls)
+      val environmentApplication = EnvironmentApplication(application.id, application.name, Environment.PRODUCTION,
+        application.description, application.rateLimitTier, application.applicationUrls)
 
       given(mockApplicationRepository.fetchByClientId(productionClientId)).willReturn(successful(Some(application)))
 
@@ -99,7 +100,8 @@ class ApplicationServiceSpec extends UnitSpec with MockitoSugar {
 
   "fetchByServerToken" should {
     "return the environment application when it exists" in new Setup {
-      val environmentApplication = EnvironmentApplication(application.id, application.name, Environment.PRODUCTION, application.description, application.applicationUrls)
+      val environmentApplication = EnvironmentApplication(application.id, application.name, Environment.PRODUCTION,
+        application.description, application.rateLimitTier, application.applicationUrls)
 
       given(mockApplicationRepository.fetchByServerToken(productionServerToken)).willReturn(successful(application))
 
@@ -125,7 +127,8 @@ class ApplicationServiceSpec extends UnitSpec with MockitoSugar {
 
   "authenticate" should {
     "return the production application when the clientId and secret are correct" in new Setup {
-      val productionApplication = EnvironmentApplication(application.id, application.name, Environment.PRODUCTION, application.description, application.applicationUrls)
+      val productionApplication = EnvironmentApplication(application.id, application.name, Environment.PRODUCTION,
+        application.description, application.rateLimitTier, application.applicationUrls)
 
       given(mockApplicationRepository.fetchByClientId(productionClientId)).willReturn(successful(Some(application)))
 
@@ -136,7 +139,8 @@ class ApplicationServiceSpec extends UnitSpec with MockitoSugar {
     }
 
     "return the sandbox application when the clientId and secret are correct" in new Setup {
-      val sandboxApplication = EnvironmentApplication(application.id, application.name, Environment.SANDBOX, application.description, application.applicationUrls)
+      val sandboxApplication = EnvironmentApplication(application.id, application.name, Environment.SANDBOX,
+        application.description, application.rateLimitTier, application.applicationUrls)
 
       given(mockApplicationRepository.fetchByClientId(sandboxClientId)).willReturn(successful(Some(application)))
 

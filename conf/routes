@@ -9,4 +9,4 @@ GET     /assets/*file                                           controllers.Asse
 POST    /application/:id/subscription                           @controllers.SubscriptionController.subscribe(id: String, context: String, version: String)
 DELETE  /application/:id/subscription                           @controllers.SubscriptionController.unsubscribe(id: String, context: String, version: String)
 GET     /application/:id/subscription                           @controllers.SubscriptionController.getSubscriptions(id: String)
-GET     /application/:id/subscription/:context/:version         @controllers.SubscriptionController.getSubscriptions(id: String)
+GET     /application/:id/subscription/:context/:version         @controllers.SubscriptionController.validateSubscription(id: String, context: String, version: String)

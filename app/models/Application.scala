@@ -12,7 +12,7 @@ case class Application(name: String,
                        applicationUrls: ApplicationUrls,
                        credentials: ApplicationCredentials = ApplicationCredentials(),
                        createdOn: DateTime = DateTime.now,
-                       rateLimitTier: Option[RateLimitTier.Value] = Some(BRONZE),
+                       rateLimitTier: RateLimitTier.Value = BRONZE,
                        id: UUID = UUID.randomUUID()) {
 
   lazy val admins = collaborators.filter(_.role == Role.ADMINISTRATOR)
