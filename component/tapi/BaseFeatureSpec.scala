@@ -7,6 +7,8 @@ import com.github.tomakehurst.wiremock.client.WireMock
 import com.github.tomakehurst.wiremock.core.WireMockConfiguration
 import org.scalatest._
 import org.scalatestplus.play.guice.GuiceOneServerPerSuite
+import play.api.Application
+import play.api.inject.guice.GuiceApplicationBuilder
 import repository.ApplicationRepository
 
 import scala.concurrent.Await.result
@@ -27,6 +29,10 @@ with GivenWhenThen with BeforeAndAfterEach with BeforeAndAfterAll with GuiceOneS
 
   val timeout = Duration(5, TimeUnit.SECONDS)
   val mocks = Seq[MockHost]()
+
+  implicit override lazy val app: Application =  new GuiceApplicationBuilder().configure(
+    "mongodb.uri" -> "mongodb://localhost:27017/tapi-application-it"
+  ).build()
 
   private def mongoRepository = {
     fakeApplication.injector.instanceOf[ApplicationRepository].repository
