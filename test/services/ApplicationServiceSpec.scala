@@ -125,6 +125,18 @@ class ApplicationServiceSpec extends UnitSpec with MockitoSugar {
     }
   }
 
+  "fetchAllByCollaboratorEmail" should {
+    "return the users applications" in new Setup {
+      val collaboratorEmail = "collaborator@gmail.com"
+
+      given(mockApplicationRepository.fetchAllByCollaboratorEmail(collaboratorEmail)).willReturn(successful(Seq(application)))
+
+      val result = await(underTest.fetchAllByCollaboratorEmail(collaboratorEmail))
+
+      result shouldBe Seq(application)
+    }
+  }
+
   "authenticate" should {
     "return the production application when the clientId and secret are correct" in new Setup {
       val productionApplication = EnvironmentApplication(application.id, productionClientId, application.name, Environment.PRODUCTION,

@@ -11,11 +11,12 @@ import scalaj.http.Http
 
 class ApplicationSpec extends BaseFeatureSpec {
 
+  val collaboratorEmail = "admin@app.com"
   val applicationUrls = ApplicationUrls(Seq("http://redirecturi"), "http://conditionUrl", "http://privacyUrl")
   val createAppRequest = CreateApplicationRequest("app name", "app description", applicationUrls,
-    Set(Collaborator("admin@app.com", Role.ADMINISTRATOR)))
+    Set(Collaborator(collaboratorEmail, Role.ADMINISTRATOR)))
 
-  feature("create and fetch api definition") {
+  feature("create and fetch application") {
 
     scenario("happy path") {
 
@@ -61,7 +62,7 @@ class ApplicationSpec extends BaseFeatureSpec {
     }
   }
 
-  feature("create and fetch api definition") {
+  feature("Authenticate") {
     scenario("production credentials") {
 
       Given("An application")
@@ -114,10 +115,29 @@ class ApplicationSpec extends BaseFeatureSpec {
 
   }
 
-  private def createApplication(): Application = {
+  feature("fetch by collaborator") {
+    scenario("return the user's applications") {
+
+      Given("An application where the user is a collaborator")
+      val application = createApplication(createAppRequest)
+
+      Given("An application where the user is not a collaborator")
+      val anotherApp = createApplication(createAppRequest.copy(collaborators = Set(Collaborator("anotheruser@gmail.com", Role.ADMINISTRATOR))))
+
+      When("I fetch the user's applications")
+      val fetchResponse = Http(s"$serviceUrl/applications?collaboratorEmail=$collaboratorEmail").asString
+
+      Then("I receive a 200 (OK) with the application for which the user is a collaborator")
+      fetchResponse.code shouldBe Status.OK
+      Json.parse(fetchResponse.body) shouldBe Json.toJson(Seq(application))
+    }
+
+  }
+
+  private def createApplication(applicationRequest: CreateApplicationRequest = createAppRequest): Application = {
     val createdResponse = Http(s"$serviceUrl/application")
       .headers(Seq(CONTENT_TYPE -> "application/json"))
-      .postData(Json.toJson(createAppRequest).toString()).asString
+      .postData(Json.toJson(applicationRequest).toString()).asString
     Json.parse(createdResponse.body).as[Application]
   }
 }

@@ -1,15 +1,19 @@
 package repository
 
+import java.util.UUID
+
 import models._
 import org.scalatest.BeforeAndAfterEach
 import play.api.inject.guice.GuiceApplicationBuilder
 import utils.UnitSpec
+
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class ApplicationRepositorySpec extends UnitSpec with BeforeAndAfterEach {
 
+  val user = "admin@app.com"
   val applicationUrls = ApplicationUrls(Seq("http://redirecturi"), "http://conditionUrl", "http://privacyUrl")
-  val application = Application("app name", "app description", Set(Collaborator("admin@app.com", Role.ADMINISTRATOR)), applicationUrls)
+  val application = Application("app name", "app description", Set(Collaborator(user, Role.ADMINISTRATOR)), applicationUrls)
 
   lazy val fakeApplication = new GuiceApplicationBuilder()
     .configure("mongodb.uri" -> "mongodb://localhost:27017/tapi-application-test")
@@ -58,6 +62,23 @@ class ApplicationRepositorySpec extends UnitSpec with BeforeAndAfterEach {
       await(underTest.fetchByClientId("anotherClientId")) shouldBe None
     }
 
+  }
+
+  "fetchAllByCollaboratorEmail" should {
+    val application2 = application.copy(id = UUID.randomUUID())
+    val otherUserApplication = application.copy(id = UUID.randomUUID(), collaborators = Set(Collaborator("another@gmail.com", Role.ADMINISTRATOR)))
+
+    "return all the user applications" in {
+      await(underTest.save(application))
+      await(underTest.save(application2))
+      await(underTest.save(otherUserApplication))
+
+      await(underTest.fetchAllByCollaboratorEmail(user)) shouldBe Seq(application, application2)
+    }
+
+    "return an empty list when no application match" in {
+      await(underTest.fetchAllByCollaboratorEmail(user)) shouldBe Seq()
+    }
   }
 
   "fetchByServerToken" should {

@@ -35,12 +35,12 @@ with GivenWhenThen with BeforeAndAfterEach with BeforeAndAfterAll with GuiceOneS
   ).build()
 
   private def mongoRepository = {
-    fakeApplication.injector.instanceOf[ApplicationRepository].repository
+    result(app.injector.instanceOf[ApplicationRepository].repository, timeout)
   }
 
   override protected def beforeEach(): Unit = {
     mocks.foreach(m => if (!m.server.isRunning) m.server.start())
-    result(mongoRepository.map(_.drop(failIfNotFound = false)), timeout)
+    result(mongoRepository.drop(failIfNotFound = false), timeout)
   }
 
   override protected def afterEach(): Unit = {
@@ -49,6 +49,6 @@ with GivenWhenThen with BeforeAndAfterEach with BeforeAndAfterAll with GuiceOneS
 
   override protected def afterAll(): Unit = {
     mocks.foreach(_.server.stop())
-    result(mongoRepository.map(_.drop(failIfNotFound = false)), timeout)
+    result(mongoRepository.drop(failIfNotFound = false), timeout)
   }
 }

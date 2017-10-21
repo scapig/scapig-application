@@ -4,6 +4,8 @@ GET     /application/:id                                        @controllers.App
 GET     /application                                            @controllers.ApplicationController.queryDispatcher()
 POST    /application/authenticate                               @controllers.ApplicationController.authenticate()
 
+GET     /applications                                            @controllers.ApplicationController.fetchAllByCollaboratorEmail(collaboratorEmail: String)
+
 GET     /assets/*file                                           controllers.Assets.versioned(path="/public", file: Asset)
 
 POST    /application/:id/subscription                           @controllers.SubscriptionController.subscribe(id: String, context: String, version: String)

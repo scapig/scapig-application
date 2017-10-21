@@ -23,9 +23,10 @@ import scala.concurrent.Future.{failed, successful}
 
 class ApplicationControllerSpec extends UnitSpec with MockitoSugar with BeforeAndAfterAll {
 
+  val collaboratorEmail = "admin@app.com"
   val applicationUrls = ApplicationUrls(Seq("http://redirecturi"), "http://conditionUrl", "http://privacyUrl")
   val createAppRequest = CreateApplicationRequest("app name", "app description", applicationUrls,
-    Set(Collaborator("admin@app.com", Role.ADMINISTRATOR)))
+    Set(Collaborator(collaboratorEmail, Role.ADMINISTRATOR)))
 
   trait Setup {
     val mockApplicationService: ApplicationService = mock[ApplicationService]
@@ -140,6 +141,20 @@ class ApplicationControllerSpec extends UnitSpec with MockitoSugar with BeforeAn
       jsonBodyOf(result) shouldBe Json.parse(s"""{"code": "NOT_FOUND", "message": "no application found for serverToken anotherServerToken"}""")
     }
 
+  }
+
+  "fetchAllByCollaboratorEmail" should {
+
+    "succeed with a 200 (Ok) with the user's application" in new Setup {
+
+      given(mockApplicationService.fetchAllByCollaboratorEmail(collaboratorEmail))
+        .willReturn(successful(Seq(application)))
+
+      val result: Result = await(underTest.fetchAllByCollaboratorEmail(collaboratorEmail)(FakeRequest()))
+
+      status(result) shouldBe Status.OK
+      jsonBodyOf(result) shouldBe Json.toJson(Seq(application))
+    }
   }
 
   "authenticate" should {

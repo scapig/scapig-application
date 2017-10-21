@@ -6,6 +6,8 @@ import models.{Application, ApplicationNotFoundException}
 import models.JsonFormatters._
 import play.api.libs.json.Json
 import play.modules.reactivemongo.ReactiveMongoApi
+import reactivemongo.api.Cursor
+import reactivemongo.api.Cursor.FailOnError
 import reactivemongo.api.commands.{UpdateWriteResult, WriteResult}
 import reactivemongo.api.indexes.{Index, IndexType}
 import reactivemongo.play.json.collection.JSONCollection
@@ -36,6 +38,13 @@ class ApplicationRepository @Inject()(val reactiveMongoApi: ReactiveMongoApi)  {
         case Some(app) => app
         case _ => throw ApplicationNotFoundException()
       }
+    )
+  }
+
+  def fetchAllByCollaboratorEmail(collaboratorEmail: String): Future[Seq[Application]] = {
+    repository.flatMap(collection =>
+      collection.find(Json.obj("collaborators.emailAddress" -> collaboratorEmail))
+        .cursor[Application]().collect(100, FailOnError[Seq[Application]]())
     )
   }
 

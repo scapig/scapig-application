@@ -26,6 +26,10 @@ class ApplicationService @Inject()(applicationRepository: ApplicationRepository)
     }
   }
 
+  def fetchAllByCollaboratorEmail(collaboratorEmail: String): Future[Seq[Application]] = {
+    applicationRepository.fetchAllByCollaboratorEmail(collaboratorEmail)
+  }
+
   def createOrUpdate(application: Application): Future[Application] = applicationRepository.save(application)
 
   def authenticate(authenticateRequest: AuthenticateRequest): Future[Option[EnvironmentApplication]] = {

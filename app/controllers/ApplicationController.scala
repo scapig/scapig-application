@@ -36,6 +36,10 @@ class ApplicationController  @Inject()(cc: ControllerComponents,
     }
   }
 
+  def fetchAllByCollaboratorEmail(collaboratorEmail: String) = Action.async { implicit request =>
+    applicationService.fetchAllByCollaboratorEmail(collaboratorEmail) map { applications =>Ok(Json.toJson(applications))}
+  }
+
   private def fetchByClientId(clientId: String) = {
     applicationService.fetchByClientId(clientId) map {
       case Some(application) => Ok(Json.toJson(application))
