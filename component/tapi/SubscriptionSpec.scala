@@ -11,8 +11,8 @@ import scalaj.http.Http
 
 class SubscriptionSpec extends BaseFeatureSpec {
 
-  val applicationUrls = ApplicationUrls(Seq("http://redirecturi"), "http://conditionUrl", "http://privacyUrl")
-  val createAppRequest = CreateApplicationRequest("app name", "app description", applicationUrls,
+  val redirectUris = Seq("http://redirecturi")
+  val createAppRequest = CreateApplicationRequest("app name", "app description", redirectUris,
     Set(Collaborator("admin@app.com", Role.ADMINISTRATOR)))
 
   feature("subscribe and unsubscribe an application to an API") {

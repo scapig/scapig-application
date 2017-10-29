@@ -12,7 +12,7 @@ import scalaj.http.Http
 class ApplicationSpec extends BaseFeatureSpec {
 
   val collaboratorEmail = "admin@app.com"
-  val applicationUrls = ApplicationUrls(Seq("http://redirecturi"), "http://conditionUrl", "http://privacyUrl")
+  val applicationUrls = Seq("http://redirecturi")
   val createAppRequest = CreateApplicationRequest("app name", "app description", applicationUrls,
     Set(Collaborator(collaboratorEmail, Role.ADMINISTRATOR)))
 
@@ -25,8 +25,8 @@ class ApplicationSpec extends BaseFeatureSpec {
         .headers(Seq(CONTENT_TYPE -> "application/json"))
         .postData(Json.toJson(createAppRequest).toString()).asString
 
-      Then("I receive a 200 (Ok) with the new application")
-      createdResponse.code shouldBe OK
+      Then("I receive a 201 (Ok) with the new application")
+      createdResponse.code shouldBe Status.CREATED
       val newApplication = Json.parse(createdResponse.body).as[Application]
 
       And("The application can be retrieved")
@@ -45,7 +45,7 @@ class ApplicationSpec extends BaseFeatureSpec {
       Then("I receive a 200 (Ok) with the environment application")
       fetchResponse.code shouldBe OK
       Json.parse(fetchResponse.body) shouldBe Json.toJson(EnvironmentApplication(application.id, application.credentials.production.clientId,
-        application.name, Environment.PRODUCTION, application.description, application.rateLimitTier, application.applicationUrls))
+        application.name, Environment.PRODUCTION, application.description, application.rateLimitTier, application.redirectUris))
     }
 
     scenario("fetch by sandbox clientId") {
@@ -58,7 +58,7 @@ class ApplicationSpec extends BaseFeatureSpec {
       Then("I receive a 200 (Ok) with the environment application")
       fetchResponse.code shouldBe OK
       Json.parse(fetchResponse.body) shouldBe Json.toJson(EnvironmentApplication(application.id, application.credentials.sandbox.clientId,
-        application.name, Environment.SANDBOX, application.description, application.rateLimitTier, application.applicationUrls))
+        application.name, Environment.SANDBOX, application.description, application.rateLimitTier, application.redirectUris))
     }
   }
 
@@ -77,7 +77,7 @@ class ApplicationSpec extends BaseFeatureSpec {
       Then("I receive a 200 (Ok) with the environment application")
       fetchResponse.code shouldBe OK
       Json.parse(fetchResponse.body) shouldBe Json.toJson(EnvironmentApplication(application.id, application.credentials.production.clientId,
-        application.name, Environment.PRODUCTION, application.description, application.rateLimitTier, application.applicationUrls))
+        application.name, Environment.PRODUCTION, application.description, application.rateLimitTier, application.redirectUris))
     }
 
     scenario("sandbox credentials") {
@@ -94,7 +94,7 @@ class ApplicationSpec extends BaseFeatureSpec {
       Then("I receive a 200 (Ok) with the environment application")
       fetchResponse.code shouldBe OK
       Json.parse(fetchResponse.body) shouldBe Json.toJson(EnvironmentApplication(application.id, application.credentials.sandbox.clientId,
-        application.name, Environment.SANDBOX, application.description, application.rateLimitTier, application.applicationUrls))
+        application.name, Environment.SANDBOX, application.description, application.rateLimitTier, application.redirectUris))
 
     }
 

@@ -12,8 +12,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class ApplicationRepositorySpec extends UnitSpec with BeforeAndAfterEach {
 
   val user = "admin@app.com"
-  val applicationUrls = ApplicationUrls(Seq("http://redirecturi"), "http://conditionUrl", "http://privacyUrl")
-  val application = Application("app name", "app description", Set(Collaborator(user, Role.ADMINISTRATOR)), applicationUrls)
+  val redirectUris = Seq("http://redirecturi")
+  val application = Application("app name", "app description", Set(Collaborator(user, Role.ADMINISTRATOR)), redirectUris)
 
   lazy val fakeApplication = new GuiceApplicationBuilder()
     .configure("mongodb.uri" -> "mongodb://localhost:27017/tapi-application-test")

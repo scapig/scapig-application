@@ -2,7 +2,7 @@ package services
 
 import javax.inject.{Inject, Singleton}
 
-import models.{Application, Environment, AuthenticateRequest, EnvironmentApplication}
+import models._
 import repository.ApplicationRepository
 
 import scala.concurrent.Future
@@ -30,7 +30,22 @@ class ApplicationService @Inject()(applicationRepository: ApplicationRepository)
     applicationRepository.fetchAllByCollaboratorEmail(collaboratorEmail)
   }
 
-  def createOrUpdate(application: Application): Future[Application] = applicationRepository.save(application)
+  def create(createApplicationRequest: CreateApplicationRequest): Future[Application] = {
+    applicationRepository.save(Application(createApplicationRequest))
+  }
+
+  def update(appId: String, updateApplicationRequest: UpdateApplicationRequest): Future[Application] = {
+    for {
+      app <- applicationRepository.fetch(appId)
+      updatedApp = app.copy(
+        name = updateApplicationRequest.name,
+        description = updateApplicationRequest.description,
+        rateLimitTier = updateApplicationRequest.rateLimitTier,
+        redirectUris = updateApplicationRequest.redirectUris
+      )
+      savedApp <- applicationRepository.save(updatedApp)
+    } yield savedApp
+  }
 
   def authenticate(authenticateRequest: AuthenticateRequest): Future[Option[EnvironmentApplication]] = {
     applicationRepository.fetchByClientId(authenticateRequest.clientId) map (_.flatMap { app =>

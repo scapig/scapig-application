@@ -12,12 +12,12 @@ case class EnvironmentApplication(id: UUID,
                                   environment: Environment,
                                   description: String,
                                   rateLimitTier: RateLimitTier,
-                                  applicationUrls: ApplicationUrls)
+                                  redirectUris: Seq[String])
 
 object EnvironmentApplication {
   def apply(clientId: String, application: Application): EnvironmentApplication = {
     val environment = if(application.credentials.production.clientId == clientId) Environment.PRODUCTION else Environment.SANDBOX
-    EnvironmentApplication(application.id, clientId, application.name, environment, application.description, application.rateLimitTier, application.applicationUrls)
+    EnvironmentApplication(application.id, clientId, application.name, environment, application.description, application.rateLimitTier, application.redirectUris)
   }
 }
 

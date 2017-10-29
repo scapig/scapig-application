@@ -1,14 +1,10 @@
 package controllers
 
-import models._
 import models.JsonFormatters._
-import models.RateLimitTier.BRONZE
-import org.joda.time.{DateTime, DateTimeUtils}
+import models._
+import org.joda.time.DateTimeUtils
 import org.mockito.BDDMockito.given
-import org.mockito.{ArgumentCaptor, Matchers}
-import org.mockito.Matchers.any
-import org.mockito.Mockito.{verify, verifyZeroInteractions}
-import org.scalactic.Equality
+import org.mockito.Mockito.verifyZeroInteractions
 import org.scalatest.BeforeAndAfterAll
 import org.scalatest.mockito.MockitoSugar
 import play.api.http.Status
@@ -18,15 +14,16 @@ import play.api.test.{FakeRequest, Helpers}
 import services.ApplicationService
 import utils.UnitSpec
 
-import scala.concurrent.Future
 import scala.concurrent.Future.{failed, successful}
 
 class ApplicationControllerSpec extends UnitSpec with MockitoSugar with BeforeAndAfterAll {
 
   val collaboratorEmail = "admin@app.com"
-  val applicationUrls = ApplicationUrls(Seq("http://redirecturi"), "http://conditionUrl", "http://privacyUrl")
-  val createAppRequest = CreateApplicationRequest("app name", "app description", applicationUrls,
+  val redirectUris = Seq("http://redirecturi")
+  val createAppRequest = CreateApplicationRequest("app name", "app description", redirectUris,
     Set(Collaborator(collaboratorEmail, Role.ADMINISTRATOR)))
+
+  val updateAppRequest = UpdateApplicationRequest("updated name", "updated description", Seq("http://updatedRedirectUri"), RateLimitTier.SILVER)
 
   trait Setup {
     val mockApplicationService: ApplicationService = mock[ApplicationService]
@@ -34,10 +31,8 @@ class ApplicationControllerSpec extends UnitSpec with MockitoSugar with BeforeAn
 
     val request = FakeRequest()
 
-    given(mockApplicationService.createOrUpdate(any())).willAnswer(returnSame[Application])
-
     val application = Application(createAppRequest.name, createAppRequest.description,
-      createAppRequest.collaborators, createAppRequest.applicationUrls)
+      createAppRequest.collaborators, createAppRequest.redirectUris)
     val productionClientId = application.credentials.production.clientId
     val environmentApplication = EnvironmentApplication(productionClientId, application)
     val productionServerToken = application.credentials.production.serverToken
@@ -54,14 +49,12 @@ class ApplicationControllerSpec extends UnitSpec with MockitoSugar with BeforeAn
   "create" should {
 
     "succeed with a 201 (Created) with the application when payload is valid and service responds successfully" in new Setup {
+      given(mockApplicationService.create(createAppRequest)).willReturn(successful(application))
 
       val result: Result = await(underTest.create()(request.withBody(Json.toJson(createAppRequest))))
 
       status(result) shouldBe Status.CREATED
-      val createdApplication = jsonBodyOf(result).as[Application]
-      createdApplication shouldBe application.copy(credentials = createdApplication.credentials, id = createdApplication.id)
-
-      verify(mockApplicationService).createOrUpdate(createdApplication)
+      jsonBodyOf(result).as[Application] shouldBe application
     }
 
     "fail with a 400 (Bad Request) when the json payload is invalid for the request" in new Setup {
@@ -69,6 +62,29 @@ class ApplicationControllerSpec extends UnitSpec with MockitoSugar with BeforeAn
       val body = """{ "invalid": "json" }"""
 
       val result: Result = await(underTest.create()(request.withBody(Json.parse(body))))
+
+      status(result) shouldBe Status.BAD_REQUEST
+      jsonBodyOf(result) shouldBe Json.parse("""{"code":"INVALID_REQUEST","message":"description is required"}""")
+      verifyZeroInteractions(mockApplicationService)
+    }
+  }
+
+  "update" should {
+
+    "succeed with a 200 (Ok) with the application when payload is valid and service responds successfully" in new Setup {
+      given(mockApplicationService.update(application.id.toString, updateAppRequest)).willReturn(successful(application))
+
+      val result: Result = await(underTest.update(application.id.toString)(request.withBody(Json.toJson(updateAppRequest))))
+
+      status(result) shouldBe Status.OK
+      jsonBodyOf(result).as[Application] shouldBe application
+    }
+
+    "fail with a 400 (Bad Request) when the json payload is invalid for the request" in new Setup {
+
+      val body = """{ "invalid": "json" }"""
+
+      val result: Result = await(underTest.update(application.id.toString)(request.withBody(Json.parse(body))))
 
       status(result) shouldBe Status.BAD_REQUEST
       jsonBodyOf(result) shouldBe Json.parse("""{"code":"INVALID_REQUEST","message":"description is required"}""")

@@ -15,8 +15,8 @@ class SubscriptionServiceSpec extends UnitSpec with MockitoSugar {
 
   val appId = UUID.randomUUID().toString
   val api = APIIdentifier("context", "version")
-  val applicationUrls = ApplicationUrls(Seq("http://redirecturi"), "http://conditionUrl", "http://privacyUrl")
-  val application = Application("app name", "app description", Set(Collaborator("admin@app.com", Role.ADMINISTRATOR)), applicationUrls)
+  val redirectUris = Seq("http://redirecturi")
+  val application = Application("app name", "app description", Set(Collaborator("admin@app.com", Role.ADMINISTRATOR)), redirectUris)
 
   trait Setup {
     val applicationRepository = mock[ApplicationRepository]

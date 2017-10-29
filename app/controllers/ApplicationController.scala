@@ -17,7 +17,13 @@ class ApplicationController  @Inject()(cc: ControllerComponents,
 
   def create() = Action.async(parse.json) { implicit request =>
     withJsonBody[CreateApplicationRequest] { createAppRequest: CreateApplicationRequest =>
-      applicationService.createOrUpdate(Application(createAppRequest)) map { application => Created(Json.toJson(application))}
+      applicationService.create(createAppRequest) map { application => Created(Json.toJson(application))}
+    }
+  }
+
+  def update(id: String) = Action.async(parse.json) { implicit request =>
+    withJsonBody[UpdateApplicationRequest] { updateApplicationRequest: UpdateApplicationRequest =>
+      applicationService.update(id, updateApplicationRequest) map { application => Ok(Json.toJson(application))}
     }
   }
 

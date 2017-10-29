@@ -9,7 +9,7 @@ import org.joda.time.DateTime
 case class Application(name: String,
                        description: String,
                        collaborators: Set[Collaborator],
-                       applicationUrls: ApplicationUrls,
+                       redirectUris: Seq[String],
                        credentials: ApplicationCredentials = ApplicationCredentials(),
                        createdOn: DateTime = DateTime.now,
                        rateLimitTier: RateLimitTier.Value = BRONZE,
@@ -19,7 +19,7 @@ case class Application(name: String,
 }
 
 object Application {
-  def apply(req: CreateApplicationRequest): Application = Application(req.name, req.description, req.normalisedCollaborators, req.applicationUrls)
+  def apply(req: CreateApplicationRequest): Application = Application(req.name, req.description, req.normalisedCollaborators, req.redirectUris)
 }
 
 case class Collaborator(emailAddress: String, role: Role.Value)
@@ -42,9 +42,6 @@ case class EnvironmentCredentials(clientId: String = random(),
 case class ClientSecret(secret: String = random(),
                         createdOn: DateTime = DateTime.now())
 
-case class ApplicationUrls(redirectUris: Seq[String],
-                           termsAndConditionsUrl: String,
-                           privacyPolicyUrl: String)
 
 object Role extends Enumeration {
   type Role = Value
