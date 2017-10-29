@@ -17,7 +17,7 @@ class ApplicationController  @Inject()(cc: ControllerComponents,
 
   def create() = Action.async(parse.json) { implicit request =>
     withJsonBody[CreateApplicationRequest] { createAppRequest: CreateApplicationRequest =>
-      applicationService.createOrUpdate(Application(createAppRequest)) map { application => Ok(Json.toJson(application))}
+      applicationService.createOrUpdate(Application(createAppRequest)) map { application => Created(Json.toJson(application))}
     }
   }
 

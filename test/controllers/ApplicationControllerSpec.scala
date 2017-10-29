@@ -53,11 +53,11 @@ class ApplicationControllerSpec extends UnitSpec with MockitoSugar with BeforeAn
 
   "create" should {
 
-    "succeed with a 200 with the application when payload is valid and service responds successfully" in new Setup {
+    "succeed with a 201 (Created) with the application when payload is valid and service responds successfully" in new Setup {
 
       val result: Result = await(underTest.create()(request.withBody(Json.toJson(createAppRequest))))
 
-      status(result) shouldBe Status.OK
+      status(result) shouldBe Status.CREATED
       val createdApplication = jsonBodyOf(result).as[Application]
       createdApplication shouldBe application.copy(credentials = createdApplication.credentials, id = createdApplication.id)
 
