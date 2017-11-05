@@ -19,7 +19,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 @Singleton
 class ApplicationRepository @Inject()(val reactiveMongoApi: ReactiveMongoApi)  {
 
-  val repository: Future[JSONCollection] =
+  def repository: Future[JSONCollection] =
     reactiveMongoApi.database.map(_.collection[JSONCollection]("tapi-application"))
 
   def save(application: Application): Future[Application] = {

@@ -12,8 +12,8 @@ import scalaj.http.Http
 class ApplicationSpec extends BaseFeatureSpec {
 
   val collaboratorEmail = "admin@app.com"
-  val applicationUrls = Seq("http://redirecturi")
-  val createAppRequest = CreateApplicationRequest("app name", "app description", applicationUrls,
+  val redirectUris = Seq("http://redirecturi")
+  val createAppRequest = CreateApplicationRequest("app name", "app description", redirectUris,
     Set(Collaborator(collaboratorEmail, Role.ADMINISTRATOR)))
 
   feature("create and fetch application") {
