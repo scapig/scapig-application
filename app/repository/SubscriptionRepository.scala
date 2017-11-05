@@ -15,7 +15,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 @Singleton
 class SubscriptionRepository @Inject()(val reactiveMongoApi: ReactiveMongoApi)  {
 
-  val repository: Future[JSONCollection] =
+  def repository: Future[JSONCollection] =
     reactiveMongoApi.database.map(_.collection[JSONCollection]("tapi-subscription"))
 
   def subscribe(applicationId: String, apiIdentifier: APIIdentifier): Future[HasSucceeded] = {
