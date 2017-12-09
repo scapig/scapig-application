@@ -16,7 +16,7 @@ class ApplicationRepositorySpec extends UnitSpec with BeforeAndAfterEach {
   val application = Application("app name", "app description", Set(Collaborator(user, Role.ADMINISTRATOR)), redirectUris)
 
   lazy val fakeApplication = new GuiceApplicationBuilder()
-    .configure("mongodb.uri" -> "mongodb://localhost:27017/tapi-application-test")
+    .configure("mongodb.uri" -> "mongodb://localhost:27017/scapig-application-test")
     .build()
 
   lazy val underTest = fakeApplication.injector.instanceOf[ApplicationRepository]

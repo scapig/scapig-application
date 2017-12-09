@@ -1,4 +1,4 @@
-package tapi
+package scapig
 
 import java.util.concurrent.TimeUnit
 
@@ -31,7 +31,7 @@ with GivenWhenThen with BeforeAndAfterEach with BeforeAndAfterAll with GuiceOneS
   val mocks = Seq[MockHost]()
 
   implicit override lazy val app: Application =  new GuiceApplicationBuilder().configure(
-    "mongodb.uri" -> "mongodb://localhost:27017/tapi-application-it"
+    "mongodb.uri" -> "mongodb://localhost:27017/scapig-application-it"
   ).build()
 
   private def mongoRepository = {

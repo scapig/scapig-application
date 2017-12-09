@@ -12,7 +12,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 class SubscriptionRepositorySpec extends UnitSpec with BeforeAndAfterEach {
 
   lazy val fakeApplication = new GuiceApplicationBuilder()
-    .configure("mongodb.uri" -> "mongodb://localhost:27017/tapi-subscription-test")
+    .configure("mongodb.uri" -> "mongodb://localhost:27017/scapig-subscription-test")
     .build()
 
   lazy val underTest = fakeApplication.injector.instanceOf[SubscriptionRepository]

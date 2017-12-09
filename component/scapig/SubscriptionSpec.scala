@@ -1,4 +1,4 @@
-package tapi
+package scapig
 
 import models.JsonFormatters._
 import models._
