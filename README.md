@@ -11,7 +11,14 @@ sbt universal:package-zip-tarball
 docker build -t scapig-application .
 ``
 
+## Publishing
+``
+docker tag scapig-application scapig/scapig-application:VERSION
+docker login
+docker push scapig/scapig-application:VERSION
+``
+
 ## Running
 ``
-docker run -p7020:7020 -i -a stdin -a stdout -a stderr scapig-application sh start-docker.sh
+docker run -p9012:9012 -d scapig/scapig-application:VERSION
 ``
