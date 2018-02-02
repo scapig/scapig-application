@@ -13,12 +13,12 @@ docker build -t scapig-application .
 
 ## Publishing
 ``
-docker tag scapig-application scapig/scapig-application:VERSION
+docker tag scapig-application scapig/scapig-application
 docker login
-docker push scapig/scapig-application:VERSION
+docker push scapig/scapig-application
 ``
 
 ## Running
 ``
-docker run -p9012:9012 -d scapig/scapig-application:VERSION
+docker run -p9012:9012 -d scapig/scapig-application
 ``
